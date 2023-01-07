@@ -1,12 +1,12 @@
 package com.jebscape.megaserver;
 
 import com.google.inject.Provides;
+
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.*;
+import net.runelite.api.events.*;
+import net.runelite.client.callback.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -20,31 +20,92 @@ public class MegaserverPlugin extends Plugin
 {
 	@Inject
 	private Client client;
-
+	
+	@Inject
+	private ClientThread clientThread;
 	@Inject
 	private MegaserverConfig config;
+	private JebScapeConnection server = new JebScapeConnection();
+	private MegaserverMod megaserverMod = new MegaserverMod();
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		log.info("Megaserver started!");
+		log.info("JebScape has started!");
+		
+		server.init();
+		server.connect();
+		
+		clientThread.invoke(() ->
+				{
+					megaserverMod.init(client, server);
+				});
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
-		log.info("Megaserver stopped!");
+		clientThread.invoke(() ->
+				{
+					megaserverMod.stop();
+				});
+		
+		server.disconnect();
+		
+		log.info("JebScape has stopped!");
 	}
 
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+		// if no longer logged into OSRS, disconnect
+		if (gameStateChanged.getGameState() != GameState.LOGGED_IN)
 		{
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Megaserver says " + config.greeting(), null);
+			server.logout();
+			
+			megaserverMod.stop();
 		}
 	}
-
+	
+	@Subscribe
+	public void onAnimationChanged(AnimationChanged animationChanged)
+	{
+		if (megaserverMod.isActive())
+			megaserverMod.onAnimationChanged(animationChanged);
+	}
+	
+	@Subscribe
+	public void onGameTick(GameTick gameTick)
+	{
+		// don't tick anything if not logged into OSRS
+		if (client.getGameState() == GameState.LOGGED_IN)
+		{
+			if (!server.isLoggedIn())
+			{
+				// log in as a guest
+				server.login(client.getAccountHash(), 0, client.getLocalPlayer().getName(), false);
+			}
+			else if (client.getAccountHash() == server.getAccountHash())
+			{
+				// we're logged in, let's play!
+				server.onGameTick();
+				boolean loggedInAsGuest = server.isGuest();
+				int gameDataBytesSent = 0;
+				
+				if (!megaserverMod.isActive())
+					megaserverMod.start();
+				
+				gameDataBytesSent += megaserverMod.onGameTick(gameTick);
+			}
+		}
+	}
+	
+	@Subscribe
+	public void onClientTick(ClientTick clientTick)
+	{
+		megaserverMod.onClientTick(clientTick);
+	}
+	
 	@Provides
 	MegaserverConfig provideConfig(ConfigManager configManager)
 	{

@@ -8,12 +8,12 @@ import net.runelite.client.config.ConfigItem;
 public interface MegaserverConfig extends Config
 {
 	@ConfigItem(
-		keyName = "greeting",
+		keyName = "jebscape",
 		name = "Welcome Greeting",
 		description = "The message to show to the user when they login"
 	)
 	default String greeting()
 	{
-		return "Hello";
+		return "powered by JebScape";
 	}
 }
