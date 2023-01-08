@@ -80,6 +80,8 @@ public class MegaserverPlugin extends Plugin
 		// don't tick anything if not logged into OSRS
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
+			server.onGameTick();
+			
 			if (!server.isLoggedIn())
 			{
 				// log in as a guest
@@ -87,11 +89,10 @@ public class MegaserverPlugin extends Plugin
 			}
 			else if (client.getAccountHash() == server.getAccountHash())
 			{
-				// we're logged in, let's play!
-				server.onGameTick();
 				boolean loggedInAsGuest = server.isGuest();
 				int gameDataBytesSent = 0;
 				
+				// we're logged in, let's play!
 				if (!megaserverMod.isActive())
 					megaserverMod.start();
 				

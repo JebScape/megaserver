@@ -140,7 +140,7 @@ public class JebScapeConnection
 		loginPacketHeader |= (gameSessionID & 0x1FF) << 2;			// 11/32 bits
 		loginPacketHeader |= (isUsingKey ? 0x1 : 0x0) << 11;		// 12/32 bits
 		loginPacketHeader |= (PROTOCOL_VERSION & 0x3FF) << 12;		// 22/32 bits
-		loginPacketHeader |= (0x3FFF & 0x3FF) << 22;				// 32/32 bits
+		loginPacketHeader |= (0x3FF & 0x3FF) << 22;					// 32/32 bits
 		
 		byte[] nameBytes = accountName.getBytes();
 		int strLen = accountName.length();
@@ -294,6 +294,8 @@ public class JebScapeConnection
 				gameServerPacket.erase();
 				gameServerPacket.buffer.clear();
 				bytesReceived = gameChannel.read(gameServerPacket.buffer);
+				gameServerPacket.buffer.rewind();
+				
 				if (bytesReceived == GAME_SERVER_PACKET_SIZE)
 				{
 					int packetHeader = gameServerPacket.buffer.getInt();
@@ -328,6 +330,8 @@ public class JebScapeConnection
 					else if (newPacketType == GAME_PACKET && gameSessionID == newSessionID)
 					{
 						// place the latest tick info here
+						currentGameTick = newTick;
+						lastReceivedGameTick = newTick;
 						gameServerData[newTick][newPacketID].setData(gameServerPacket);
 						numGameServerPacketsSent[newTick] = newNumPacketsSent;
 						gameServerTickExecutionTime = newExecutionTime; // this will only be associated with the last packet received, not necessarily the most recent tick

@@ -90,7 +90,7 @@ public class MegaserverMod
 		// analyze most recent data received from the server
 		JebScapeServerData[][] serverData = server.getRecentGameServerData();
 		int[] numPacketsSent = server.getNumGameServerPacketsSent();
-		int lastReceivedTick = server.getLastReceivedGameTick();
+		int tick = server.getLastReceivedGameTick();
 		final int JAU_PACKING_RATIO = 32;
 		
 		// this will update up to 64 ghosts with up to 16 past ticks' worth of data
@@ -98,8 +98,6 @@ public class MegaserverMod
 		// we start with the oldest data first...
 		for (int i = 0; i < server.TICKS_UNTIL_LOGOUT; i++)
 		{
-			int tick = (lastReceivedTick + 1) % server.TICKS_UNTIL_LOGOUT;
-			
 			// only bother if we've received any packets for this tick
 			if (numPacketsSent[tick] > 0)
 			{
@@ -125,10 +123,10 @@ public class MegaserverMod
 						// 14 bits world
 						// 2 bits plane
 						containsMegaserverCmd = ((data.coreData[0] & 0xFF) & // bitflag, so let's just test the one bit
-								MEGASERVER_MOVEMENT_UPDATE_CMD) == MEGASERVER_MOVEMENT_UPDATE_CMD;	// 8/32 bits
-						playerWorldFlags = (data.coreData[0] >> 8) & 0xFF;							// 16/32 bits
-						playerWorld = (data.coreData[0] >> 8) & 0x3FFF;								// 30/32 bits
-						playerWorldLocationPlane = (data.coreData[0] >> 2) & 0x3; 					// 32/32 bits
+												MEGASERVER_MOVEMENT_UPDATE_CMD) != 0;	// 8/32 bits
+						playerWorldFlags = (data.coreData[0] >> 8) & 0xFF;				// 16/32 bits
+						playerWorld = (data.coreData[0] >> 16) & 0x3FFF;				// 30/32 bits
+						playerWorldLocationPlane = (data.coreData[0] >> 30) & 0x3; 		// 32/32 bits
 						
 						// 16 bits world X position
 						// 16 bits world Y position
@@ -158,7 +156,7 @@ public class MegaserverMod
 								int ghostData = data.subDataBlocks[0][j];
 								
 								// if the values are 0x1F (31) for each relativeX and relativeY, then the ghost has despawned
-								// 10 bits combined for relativeX and relativeY; check first if despawned
+								// 10 bits combined for dx and dy; check first if despawned
 								boolean despawned = (ghostData & 0x3FF) == 0x3FF; // 10 bits (if dx and dy are both all 1s)
 								
 								if (despawned)
@@ -166,8 +164,8 @@ public class MegaserverMod
 								else
 								{
 									// not despawned, so let's extract the full data
-									// 5 bits relativeX
-									// 5 bits relativeY
+									// 5 bits dx
+									// 5 bits dx
 									// 6 bits packedOrientation
 									// 14 bits animationID
 									// 1 bit isInteracting
