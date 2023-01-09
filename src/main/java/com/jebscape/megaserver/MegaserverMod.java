@@ -49,18 +49,6 @@ public class MegaserverMod
 		
 		if (!server.isLoggedIn())
 			server.login(client.getAccountHash(), 0, client.getLocalPlayer().getName(), false);
-		
-		
-		Player player = client.getLocalPlayer();
-		ghosts[0].setModel(ghostModel);
-		ghosts[0].setPoseAnimations(player);
-		WorldPoint position = player.getWorldLocation();
-		ghosts[0].spawn(position, player.getOrientation());
-		boolean isPoseAnimation = player.getAnimation() == -1;
-		// check if any pose animations have changed
-		int animationID = isPoseAnimation ? player.getPoseAnimation() : player.getAnimation();
-		boolean interacting = player.getInteracting() != null;
-		ghosts[0].moveTo(position, player.getOrientation(), animationID, interacting, isPoseAnimation);
 	}
 	
 	public void stop()
@@ -251,6 +239,14 @@ public class MegaserverMod
 			modelData[i] = client.loadModelData(ids[i]);
 		ModelData combinedModelData = client.mergeModels(modelData, ids.length);
 		this.ghostModel = combinedModelData.light();
+		
+		Player player = client.getLocalPlayer();
+		for (int i = 0; i < MAX_GHOSTS; i++)
+		{
+			// TODO: we need to still test if we can reuse the same model or if we need to spawn multiple versions
+			ghosts[i].setModel(ghostModel);
+			ghosts[i].setPoseAnimations(player);
+		}
 		
 		renderablesLoaded = true;
 	}
