@@ -112,14 +112,14 @@ public class MegaserverMod
 						// 2 bits plane
 						containsMegaserverCmd = ((data.coreData[0] & 0xFF) & // bitflag, so let's just test the one bit
 												MEGASERVER_MOVEMENT_UPDATE_CMD) != 0;	// 8/32 bits
-						playerWorldFlags = (data.coreData[0] >> 8) & 0xFF;				// 16/32 bits
-						playerWorld = (data.coreData[0] >> 16) & 0x3FFF;				// 30/32 bits
-						playerWorldLocationPlane = (data.coreData[0] >> 30) & 0x3; 		// 32/32 bits
+						playerWorldFlags = (data.coreData[0] >>> 8) & 0xFF;				// 16/32 bits
+						playerWorld = (data.coreData[0] >>> 16) & 0x3FFF;				// 30/32 bits
+						playerWorldLocationPlane = (data.coreData[0] >>> 30) & 0x3; 	// 32/32 bits
 						
 						// 16 bits world X position
 						// 16 bits world Y position
-						playerWorldLocationX = (data.coreData[1] & 0xFFFF);			// 16/32 bits
-						playerWorldLocationY = ((data.coreData[1] >> 16) & 0xFFFF);	// 32/32 bits
+						playerWorldLocationX = (data.coreData[1] & 0xFFFF);				// 16/32 bits
+						playerWorldLocationY = ((data.coreData[1] >>> 16) & 0xFFFF);	// 32/32 bits
 						
 						// not using the third int; reserved for future use
 					}
@@ -158,12 +158,12 @@ public class MegaserverMod
 									// 14 bits animationID
 									// 1 bit isInteracting
 									// 1 bit isPoseAnimation
-									int dx = ghostData & 0x1F;									// 5/32 bits
-									int dy = (ghostData >> 5) & 0x1F;							// 10/32 bits
-									int packedOrientation = (ghostData >> 10) & 0x3F;			// 16/32 bits
-									int animationID = (ghostData >> 16) & 0x3FFF;				// 30/32 bits
-									boolean isInteracting = ((ghostData >> 30) & 0x1) == 0x1;	// 31/32 bits
-									boolean isPoseAnimation = ((ghostData >> 31) & 0x1) == 0x1;	// 32/32 bits
+									int dx = ghostData & 0x1F;										// 5/32 bits
+									int dy = (ghostData >>> 5) & 0x1F;								// 10/32 bits
+									int packedOrientation = (ghostData >>> 10) & 0x3F;				// 16/32 bits
+									int animationID = (ghostData >>> 16) & 0x3FFF;					// 30/32 bits
+									boolean isInteracting = ((ghostData >>> 30) & 0x1) == 0x1;		// 31/32 bits
+									boolean isPoseAnimation = ((ghostData >>> 31) & 0x1) == 0x1;	// 32/32 bits
 									
 									WorldPoint ghostPosition = new WorldPoint(playerWorldLocationX + dx, playerWorldLocationY + dy, playerWorldLocationPlane);
 									ghosts[0].moveTo(ghostPosition, packedOrientation * JAU_PACKING_RATIO, animationID, isInteracting, isPoseAnimation);

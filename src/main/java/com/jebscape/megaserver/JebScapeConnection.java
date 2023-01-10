@@ -309,12 +309,12 @@ public class JebScapeConnection
 					// 4 bits packet id
 					// 8 bits tick execution time
 					int newPacketType = packetHeader & 0x3;							// 2/32 bits
-					int newSessionID = (packetHeader >> 2) & 0x1FF;					// 11/32 bits
-					boolean newIsUsingKey = ((packetHeader >> 11) & 0x1) == 0x1;	// 12/32 bits
-					int newTick = (packetHeader >> 12) & 0xF;						// 16/32 bits
-					int newNumPacketsSent = (packetHeader >> 16) & 0xF;				// 20/32 bits
-					int newPacketID = (packetHeader >> 20) & 0xF;					// 24/32 bits
-					int newExecutionTime = (packetHeader >> 24) & 0xFF;				// 32/32 bits
+					int newSessionID = (packetHeader >>> 2) & 0x1FF;				// 11/32 bits
+					boolean newIsUsingKey = ((packetHeader >>> 11) & 0x1) == 0x1;	// 12/32 bits
+					int newTick = (packetHeader >>> 12) & 0xF;						// 16/32 bits
+					int newNumPacketsSent = (packetHeader >>> 16) & 0xF;			// 20/32 bits
+					int newPacketID = (packetHeader >>> 20) & 0xF;					// 24/32 bits
+					int newExecutionTime = (packetHeader >>> 24) & 0xFF;			// 32/32 bits
 					
 					if (newPacketType == LOGIN_PACKET)
 					{
