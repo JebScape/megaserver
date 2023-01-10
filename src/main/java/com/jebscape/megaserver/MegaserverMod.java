@@ -78,7 +78,7 @@ public class MegaserverMod
 		// analyze most recent data received from the server
 		JebScapeServerData[][] serverData = server.getRecentGameServerData();
 		int[] numPacketsSent = server.getNumGameServerPacketsSent();
-		int tick = server.getLastReceivedGameTick();
+		int lastReceivedTick = server.getLastReceivedGameTick();
 		final int JAU_PACKING_RATIO = 32;
 		
 		// this will update up to 64 ghosts with up to 16 past ticks' worth of data
@@ -86,12 +86,15 @@ public class MegaserverMod
 		// we start with the oldest data first...
 		for (int i = 0; i < server.TICKS_UNTIL_LOGOUT; i++)
 		{
+			// start the cycle from the earliest tick we might have data on
+			int tick = (lastReceivedTick + i) % server.TICKS_UNTIL_LOGOUT;
+			
 			// only bother if we've received any packets for this tick
 			if (numPacketsSent[tick] > 0)
 			{
 				for (int packetID = 0; packetID < server.SERVER_PACKETS_PER_TICK; packetID++)
 				{
-					JebScapeServerData data = serverData[i][packetID];
+					JebScapeServerData data = serverData[tick][packetID];
 					boolean emptyPacket = data.isEmpty();
 					boolean containsMegaserverCmd = false;
 					int playerWorldFlags = 0;
@@ -238,7 +241,7 @@ public class MegaserverMod
 		for (int i = 0; i < ids.length; i++)
 			modelData[i] = client.loadModelData(ids[i]);
 		ModelData combinedModelData = client.mergeModels(modelData, ids.length);
-		this.ghostModel = combinedModelData.light();
+		this.ghostModel = combinedModelData.light(); // TODO: try adding some params to this to see if it fixes some lighting issues we have
 		
 		Player player = client.getLocalPlayer();
 		for (int i = 0; i < MAX_GHOSTS; i++)

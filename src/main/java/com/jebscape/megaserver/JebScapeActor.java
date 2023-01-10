@@ -135,9 +135,14 @@ public class JebScapeActor
 		// use current position if nothing is in queue
 		WorldPoint prevWorldPosition;
 		if (targetQueueSize++ > 0)
+		{
 			prevWorldPosition = targetQueue[prevTargetIndex].worldDestinationPosition;
+			// TODO: check if a different primaryAnimationID exists; if so, modify the old one with our new one (hopefully this prevents the extra tick of animation repeating)
+		}
 		else
+		{
 			prevWorldPosition = WorldPoint.fromLocal(client, rlObject.getLocation());
+		}
 		
 		int distance = prevWorldPosition.distanceTo(worldPosition);
 		if (distance > 0 && distance <= 2)

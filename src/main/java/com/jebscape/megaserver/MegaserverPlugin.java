@@ -75,12 +75,14 @@ public class MegaserverPlugin extends Plugin
 	}
 	
 	@Subscribe
+	// onGameTick() only runs upon completion of Jagex server packet processing
 	public void onGameTick(GameTick gameTick)
 	{
 		// don't tick anything if not logged into OSRS
 		// TODO: Test the inclusion of "LOADING" to resolve an issue where the ghosts disappear on loading screens
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
+			// TODO: Consider processing received data from the JebScape server at a faster pace using onClientTick()
 			server.onGameTick();
 			
 			if (!server.isLoggedIn())
