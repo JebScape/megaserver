@@ -78,6 +78,7 @@ public class MegaserverPlugin extends Plugin
 	public void onGameTick(GameTick gameTick)
 	{
 		// don't tick anything if not logged into OSRS
+		// TODO: Test the inclusion of "LOADING" to resolve an issue where the ghosts disappear on loading screens
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
 			server.onGameTick();
